@@ -1,73 +1,62 @@
-import React from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function CheckoutScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Image source={require('../assets/Screenshot 2025-09-17 084431.png')} style={styles.image} />
-        <Text style={styles.title}>Checkout</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('OrderSuccess')}>
-          <Text style={styles.buttonText}>Place Order</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { commonStyles } from '../styles/commonStyles';
+
+const CheckoutScreen = () => {
+    const navigation = useNavigation();
+
+    const handleConfirmOrder = () => {
+        // TODO: Add order creation logic and payment processing here
+        navigation.navigate('OrderSuccess');
+    };
+
+    return (
+        <View style={commonStyles.container}>
+            <Text style={commonStyles.title}>Checkout</Text>
+
+            {/* Delivery Address */}
+            <View style={styles.addressContainer}>
+                <Text style={styles.addressTitle}>Delivery Address</Text>
+                <TextInput style={commonStyles.input} defaultValue="Block B - Room 203" />
+            </View>
+
+            {/* Order Summary */}
+            <View style={styles.summaryContainer}>
+                <Text style={styles.summaryTitle}>Order Summary</Text>
+                <Text style={styles.summaryText}>3 items - $4.00</Text>
+            </View>
+
+            <TouchableOpacity style={commonStyles.button} onPress={handleConfirmOrder}>
+                <Text style={commonStyles.buttonText}>Confirm Order</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f6f8fa',
-    padding: 24,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 24,
-    width: 340,
-    maxWidth: '95%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    alignItems: 'center',
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 16,
-    marginBottom: 16,
-    resizeMode: 'contain',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 18,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 24,
-    marginTop: 8,
-    marginBottom: 10,
-    shadowColor: '#007bff',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
+    addressContainer: {
+        width: '100%',
+        marginBottom: 20,
+    },
+    addressTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    summaryContainer: {
+        width: '100%',
+        marginBottom: 30,
+    },
+    summaryTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    summaryText: {
+        fontSize: 16,
+    },
 });
+
+export default CheckoutScreen;

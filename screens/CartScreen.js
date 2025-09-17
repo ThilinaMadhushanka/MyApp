@@ -1,79 +1,66 @@
+
 import React from 'react';
-import { View, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
-export default function CartScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Image source={require('../assets/hostel.png')} style={styles.image} />
-        <Text style={styles.title}>Cart</Text>
-        <Text style={styles.subtitle}>Filtering Mas Water</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CheckoutScreen')}>
-          <Text style={styles.buttonText}>Checkout</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { commonStyles } from '../styles/commonStyles';
+
+// Mock cart data
+const cartItems = [
+    { id: '1', name: 'MAS Filtered Water', quantity: 2, price: 1.50 },
+    { id: '2', name: 'Canteen Filtered Water', quantity: 1, price: 1.00 },
+];
+
+const CartScreen = () => {
+    const navigation = useNavigation();
+
+    const renderItem = ({ item }) => (
+        <View style={styles.itemContainer}>
+            <Text style={styles.itemName}>{item.name}</Text>
+            <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
+            <Text style={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
+        </View>
+    );
+
+    return (
+        <View style={commonStyles.container}>
+            <Text style={commonStyles.title}>Your Cart</Text>
+            <FlatList
+                data={cartItems}
+                renderItem={renderItem}
+                keyExtractor={item => item.id}
+                style={{ width: '100%' }}
+            />
+            <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('Checkout')}>
+                <Text style={commonStyles.buttonText}>Proceed to Checkout</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f6f8fa',
-    padding: 24,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 24,
-    width: 340,
-    maxWidth: '95%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    alignItems: 'center',
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 16,
-    marginBottom: 16,
-    resizeMode: 'contain',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#555',
-    marginBottom: 18,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 24,
-    marginTop: 8,
-    marginBottom: 10,
-    shadowColor: '#007bff',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
+    itemContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 15,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        marginBottom: 10,
+    },
+    itemName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    itemQuantity: {
+        fontSize: 14,
+        color: '#555',
+    },
+    itemPrice: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });
+
+export default CartScreen;

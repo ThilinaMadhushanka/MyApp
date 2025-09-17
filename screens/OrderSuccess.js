@@ -1,18 +1,23 @@
+
 import React from 'react';
-import { View, Image, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { commonStyles } from '../styles/commonStyles';
 
-export default function OrderSuccess({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <Image source={require('../assets/Screenshot 2025-09-17 084450.png')} style={styles.image} />
-      <Text style={styles.title}>Order Successful!</Text>
-      <Button title="Continue Shopping" onPress={() => navigation.navigate('Dashboard')} />
-    </View>
-  );
-}
+const OrderSuccess = () => {
+    const navigation = useNavigation();
 
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 20 },
-  image: { width: 200, height: 200, marginBottom: 10 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-});
+    return (
+        <View style={commonStyles.container}>
+            <Text style={commonStyles.title}>Order Placed!</Text>
+            <Text style={{textAlign: 'center', marginBottom: 20, fontSize: 16, color: '#555'}}>
+                Your order has been successfully placed. You can track its status in the 'Track' tab.
+            </Text>
+            <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('Dashboard')}>
+                <Text style={commonStyles.buttonText}>Back to Dashboard</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
+
+export default OrderSuccess;
