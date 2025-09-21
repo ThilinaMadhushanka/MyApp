@@ -15,9 +15,10 @@ import ProductDetail from '../screens/ProductDetail';
 import CartScreen from '../screens/CartScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import OrderSuccess from '../screens/OrderSuccess';
-import TrackOrder from '../screens/TrackOrder';
+import cart from '../screens/CartScreen';
 import UserProfile from '../screens/UserProfile';
 import Settings from '../screens/Settings';
+import Notification from '../screens/NotificationSettings';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,8 +26,9 @@ const Tab = createBottomTabNavigator();
 const MainApp = () => (
     <Tab.Navigator>
         <Tab.Screen name="Dashboard" component={DashboardMain} />
-        <Tab.Screen name="Track" component={TrackOrder} />
+        <Tab.Screen name="Cart" component={cart} />
         <Tab.Screen name="Profile" component={UserProfile} />
+        <Tab.Screen name="Notification" component={Notification} />
         <Tab.Screen name="Settings" component={Settings} />
     </Tab.Navigator>
 );

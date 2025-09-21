@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -15,12 +14,13 @@ const LoginScreen = () => {
             return;
         }
         Alert.alert('Success', 'Login successful!');
-        navigation.navigate('Dashboard');
+    navigation.navigate('Main');
     };
 
     return (
-        <ImageBackground source={require('../assets/images/login-bg.png')} style={styles.background}>
-            <View style={styles.container}>
+    <ImageBackground source={require('../assets/images/register_login.png')} style={styles.background} blurRadius={8}>
+        <View style={styles.overlay} />
+        <View style={styles.container}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
@@ -49,10 +49,16 @@ const styles = StyleSheet.create({
         flex: 1,
         resizeMode: 'cover',
     },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255, 254, 254, 0.4)',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         padding: 20,
+        zIndex: 1,
     },
     backButton: {
         position: 'absolute',
@@ -68,7 +74,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
+        color: '#4d4d4dff',
         textAlign: 'left',
         marginBottom: 30,
     },

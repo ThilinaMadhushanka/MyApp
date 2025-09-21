@@ -24,8 +24,8 @@ const RegisterScreen = () => {
     };
 
     return (
-        <ImageBackground source={require('../assets/images/login-bg.png')} style={styles.background}>
-            <View style={styles.container}>
+    <ImageBackground source={require('../assets/images/register_login.png')} style={styles.background} blurRadius={8}>
+        <View style={styles.container}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     background: {
         flex: 1,
         resizeMode: 'cover',
+        
     },
     container: {
         flex: 1,
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#fbf2f2ff',
         textAlign: 'left',
         marginBottom: 30,
     },
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     link: {
-        color: '#555',
+        color: '#b7b7b7ff',
         fontSize: 15,
         marginTop: 8,
         textAlign: 'center',
