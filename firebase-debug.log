@@ -1,0 +1,58 @@
+[debug] [2025-09-22T02:32:09.368Z] ----------------------------------------------------------------------
+[debug] [2025-09-22T02:32:09.370Z] Command:       /nix/store/ws50yvm6vzlzf7jzz6n7xh4szddrack1-nodejs-20.19.1/bin/node /home/user/.global_modules/bin/firebase init hosting
+[debug] [2025-09-22T02:32:09.371Z] CLI Version:   14.17.0
+[debug] [2025-09-22T02:32:09.371Z] Platform:      linux
+[debug] [2025-09-22T02:32:09.371Z] Node Version:  v20.19.1
+[debug] [2025-09-22T02:32:09.371Z] Time:          Mon Sep 22 2025 02:32:09 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-09-22T02:32:09.372Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-22T02:32:09.377Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:09.377Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:09.380Z] >>> [apiv2][query] GET https://monospace-pa.googleapis.com/v1/workspaces/myapp-75360129 [none]
+[debug] [2025-09-22T02:32:10.466Z] <<< [apiv2][status] GET https://monospace-pa.googleapis.com/v1/workspaces/myapp-75360129 200
+[debug] [2025-09-22T02:32:10.466Z] <<< [apiv2][body] GET https://monospace-pa.googleapis.com/v1/workspaces/myapp-75360129 {"workspaceId":"myapp-75360129","name":"MyApp","workspaceRedirectUrl":"firebase-myapp-1758482763782.cluster-osvg2nzmmzhzqqjio6oojllbg4.cloudworkstations.dev","status":"WORKSPACE_STATUS_RUNNING","lastAccessDatetime":"2025-09-22T02:26:05.836156Z","workspaceTemplate":"WORKSPACE_TEMPLATE_FLUTTER","owner":"SELF","serviceAccountEmail":"msp-7970905475689808396@monospace-per-ws-sa-1.iam.gserviceaccount.com","gitRepoUrl":"https://github.com/ThilinaMadhushanka/MyApp","enableNix":true,"ownerEmail":"thilinamadhushanka641@gmail.com","workstationAccessToken":"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2Nsb3VkLmdvb2dsZS5jb20vd29ya3N0YXRpb25zIiwiYXVkIjoiZmlyZWJhc2UtbXlhcHAtMTc1ODQ4Mjc2Mzc4Mi5jbHVzdGVyLW9zdmcybnptbXpoenFxamlvNm9vamxsYmc0LmNsb3Vkd29ya3N0YXRpb25zLmRldiIsImlhdCI6MTc1ODUwODMzMCwiZXhwIjoxNzU4NTk0NzMwfQ.ZdEsoR83zQyrfZre1OckuPRIQR5qcTuWBDe0PpZPwgRd_DeTm88a29-6u8LB0KONn4-rq0F6goT_lEcHnQkWpirXlAcXvIpf4WOIVdUd0jTbp_1kRp60PzQ73qbkjYHbNf2WbQiZIwJAETjwj_TyXBlE4p5zrrQ_tye1_cbwSFd21Cbf0Fh3cC-Bt0wxZ040SaDQZVWZ2L3Xha5IZRa-01viFlYtgqcI4SBdJMPv8ww0i4I4gH5ybQ7c2SsHjnOtjiSrcpUi7b8-zctchBg2RJZU3SZARTyj8ekE7Kl_IfoSJop-bOnfRw2DcqhKlGWGhsTBjXyF0vqXxi7ZIp9p8g"}
+[debug] [2025-09-22T02:32:10.467Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-22T02:32:10.468Z] > authorizing via signed-in user (thilinamadhushanka641@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/user/MyApp
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-09-22T02:32:38.634Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:38.635Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:38.636Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2025-09-22T02:32:39.080Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2025-09-22T02:32:39.080Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] i  Using project myproject-20ed0 (myproject) 
+[info] 
+=== Hosting Setup
+[debug] [2025-09-22T02:32:42.726Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:42.726Z] Checked if tokens are valid: true, expires at: 1758511926000
+[debug] [2025-09-22T02:32:42.726Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/myproject-20ed0 [none]
+[debug] [2025-09-22T02:32:42.961Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/myproject-20ed0 200
+[debug] [2025-09-22T02:32:42.961Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/myproject-20ed0 {"projectId":"myproject-20ed0","projectNumber":"771237357556","displayName":"myproject","name":"projects/myproject-20ed0","resources":{"hostingSite":"myproject-20ed0"},"state":"ACTIVE","etag":"1_9489b3a7-893c-47d7-a681-3faf9c220f17"}
+[debug] [2025-09-22T02:33:40.086Z] Error: Command failed: npm create vite@"3 - 6" (hosting) --yes -- --template react
+    at genericNodeError (node:internal/errors:984:15)
+    at wrappedFn (node:internal/errors:538:14)
+    at checkExecSyncError (node:child_process:891:11)
+    at execSync (node:child_process:963:15)
+    at init (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/frameworks/vite/index.js:28:34)
+    at async Object.init (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/frameworks/vite/index.js:17:65)
+    at async Object.doSetup (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/init/features/hosting/index.js:109:13)
+    at async init (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/init/index.js:68:13)
+    at async Command.initAction [as actionFn] (/home/user/.global_modules/lib/node_modules/firebase-tools/lib/commands/init.js:214:5)
+[error] 
+[error] Error: An unexpected error has occurred.

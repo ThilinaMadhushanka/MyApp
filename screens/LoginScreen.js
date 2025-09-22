@@ -2,25 +2,44 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { auth, db } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { useUserProfile } from '../UserProfileContext';
 
 const LoginScreen = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const { setProfile } = useUserProfile();
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Error', 'Please enter both email and password');
             return;
         }
-        Alert.alert('Success', 'Login successful!');
-    navigation.navigate('Main');
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const docRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setProfile(docSnap.data());
+            } else {
+                // Fallback to a default profile if no data is found
+                setProfile({ name: user.email, email: user.email, phone: '', address: '' });
+            }
+            Alert.alert('Success', 'Login successful!');
+            navigation.navigate('Main');
+        } catch (error) {
+            Alert.alert('Error', error.message);
+        }
     };
 
     return (
-    <ImageBackground source={require('../assets/images/register_login.png')} style={styles.background} blurRadius={8}>
-        <View style={styles.overlay} />
-        <View style={styles.container}>
+        <ImageBackground source={require('../assets/images/register_login.png')} style={styles.background} blurRadius={8}>
+            <View style={styles.overlay} />
+            <View style={styles.container}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
@@ -43,6 +62,7 @@ const LoginScreen = () => {
         </ImageBackground>
     );
 };
+
 
 const styles = StyleSheet.create({
     background: {

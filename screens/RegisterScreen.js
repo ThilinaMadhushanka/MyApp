@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { auth, db } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 const RegisterScreen = () => {
     const navigation = useNavigation();
@@ -14,13 +17,27 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         if (!studentId || !name || !roomNumber || !hostelBlock || !phone || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
-        Alert.alert('Success', 'Registration successful!');
-        navigation.navigate('Login');
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await setDoc(doc(db, 'users', user.uid), {
+                studentId,
+                name,
+                roomNumber,
+                hostelBlock,
+                phone,
+                email
+            });
+            Alert.alert('Success', 'Registration successful!');
+            navigation.navigate('Main');
+        } catch (error) {
+            Alert.alert('Error', error.message);
+        }
     };
 
     return (

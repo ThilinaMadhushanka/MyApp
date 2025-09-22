@@ -13,7 +13,7 @@ const Settings = () => {
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>Settings</Text>
 
-            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('UserProfile')}>
+            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Profile')}>
                 <View style={styles.settingLeft}>
                     <Ionicons name="person-circle-outline" size={24} color="#1E90FF" />
                     <Text style={styles.settingLabel}>Profile</Text>
@@ -21,7 +21,7 @@ const Settings = () => {
                 <Ionicons name="chevron-forward" size={20} color="#bbb" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('NotificationSettings')}>
+            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Notification')}>
                 <View style={styles.settingLeft}>
                     <Ionicons name="notifications-outline" size={24} color="#1E90FF" />
                     <Text style={styles.settingLabel}>Notifications</Text>

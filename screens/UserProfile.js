@@ -1,30 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../UserProfileContext';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, TextInput, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, TextInput, Image, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import { auth, db } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const UserProfile = () => {
     const navigation = useNavigation();
-    // Use global profile context
     const { profile, setProfile } = useUserProfile();
     const [editing, setEditing] = useState(false);
     const [editProfile, setEditProfile] = useState(profile);
     const [enrollCount] = useState(7);
+    const [profileImage, setProfileImage] = useState(null);
 
-    // When entering edit mode, sync editProfile with current profile
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    setProfile(userData);
+                    setEditProfile(userData);
+                    if (userData.profileImage) {
+                        setProfileImage(userData.profileImage);
+                    }
+                }
+            }
+        };
+        fetchProfile();
+    }, []);
+
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const source = { uri: result.assets[0].uri };
+            setProfileImage(source.uri);
+            uploadImage(source.uri);
+        }
+    };
+
+    const uploadImage = async (uri) => {
+        const user = auth.currentUser;
+        if (user) {
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const storage = getStorage();
+            const storageRef = ref(storage, `profile-images/${user.uid}`);
+            uploadBytes(storageRef, blob).then((snapshot) => {
+                getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+                    await setDoc(doc(db, 'users', user.uid), { profileImage: downloadURL }, { merge: true });
+                    setProfile(prevProfile => ({ ...prevProfile, profileImage: downloadURL }));
+                });
+            });
+        }
+    };
+
+
     const startEditing = () => {
         setEditProfile(profile);
         setEditing(true);
     };
 
-    const handleSave = () => {
-        setProfile(editProfile);
-        setEditing(false);
-        // If coming from checkout, update address there too
-        if (navigation.canGoBack() && navigation.getState()?.routes?.some(r => r.params?.fromCheckout)) {
-            navigation.navigate('Checkout', { address: `${editProfile.name},\n${editProfile.address}\n${editProfile.phone}` });
+    const handleSave = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await setDoc(doc(db, 'users', user.uid), editProfile, { merge: true });
+                setProfile(editProfile);
+                setEditing(false);
+                Alert.alert('Success', 'Profile updated successfully!');
+                if (navigation.canGoBack() && navigation.getState()?.routes?.some(r => r.params?.fromCheckout)) {
+                    navigation.navigate('Checkout', { address: `${editProfile.name},\n${editProfile.address}\n${editProfile.phone}` });
+                }
+            } catch (error) {
+                Alert.alert('Error', error.message);
+            }
         }
     };
 
@@ -34,7 +97,12 @@ const UserProfile = () => {
                 <Text style={styles.greeting}>Hi <Text style={{ color: '#1E90FF' }}>{profile.name}</Text></Text>
                 <Text style={styles.greetingSub}>Good morning!</Text>
                 <View style={styles.avatarWrap}>
-                    <View style={styles.avatar} />
+                    <TouchableOpacity onPress={pickImage}>
+                        <Image source={{ uri: profileImage || 'https://via.placeholder.com/100' }} style={styles.avatar} />
+                        <View style={styles.cameraIcon}>
+                            <Ionicons name="camera" size={20} color="#fff" />
+                        </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.sectionRow}>
                     {editing ? (
@@ -92,9 +160,6 @@ const UserProfile = () => {
                     </View>
                 )}
                 <Text style={styles.sectionTitle2}>Activity</Text>
-                <TouchableOpacity style={styles.activityBtn} onPress={startEditing}>
-                    <Text style={styles.activityText}>change profile</Text>
-                </TouchableOpacity>
                 <View style={styles.enrollRow}>
                     <Text style={styles.enrollText}>you enroll water bottles</Text>
                     <View style={styles.enrollBadge}><Text style={styles.enrollBadgeText}>{enrollCount}</Text></View>
@@ -143,6 +208,14 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         borderWidth: 3,
         borderColor: '#fff',
+    },
+    cameraIcon: {
+        position: 'absolute',
+        bottom: 10,
+        right: 0,
+        backgroundColor: '#1E90FF',
+        borderRadius: 15,
+        padding: 5,
     },
     sectionRow: {
         flexDirection: 'row',
@@ -209,15 +282,6 @@ const styles = StyleSheet.create({
         color: '#1E90FF',
         fontWeight: 'bold',
         fontSize: 15,
-    },
-    activityBtn: {
-        alignSelf: 'flex-start',
-        marginBottom: 8,
-    },
-    activityText: {
-        color: '#1E90FF',
-        fontSize: 15,
-        textDecorationLine: 'underline',
     },
     enrollRow: {
         flexDirection: 'row',
