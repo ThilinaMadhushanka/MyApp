@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth, db } from '../firebase'; // Assuming firebase.js is correctly set up for modular SDK
+import { useUserProfile } from '../UserProfileContext';
+import { auth, db } from './firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore'; // Removed 'collection' as it's not directly used in the simplified version
+import { setDoc, doc } from 'firebase/firestore';
 
 const RegisterScreen = () => {
     const navigation = useNavigation();
+    const { setProfile } = useUserProfile();
     const [studentId, setStudentId] = useState('');
     const [name, setName] = useState('');
     const [roomNumber, setRoomNumber] = useState('');
@@ -16,44 +18,41 @@ const RegisterScreen = () => {
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleRegister = async () => {
         if (!studentId || !name || !roomNumber || !hostelBlock || !phone || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
-
-        if (!auth || !db) {
-            Alert.alert('Error', 'Firebase service is not available. Please check your setup.');
-            return;
-        }
-
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // The collection is 'users', the document ID is the user's UID
-            await setDoc(doc(db, 'users', user.uid), {
+            setIsSubmitting(true);
+            const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+            const user = cred.user;
+            await setDoc(doc(db, 'Users', user.uid), {
+                email: user.email,
+                firstName: name,
+                lastName: '',
+                phone,
+                address: `${roomNumber}, ${hostelBlock}`,
                 studentId,
-                name,
                 roomNumber,
                 hostelBlock,
-                phone,
-                email
+                photo: ''
             });
-
+            setProfile({
+                name,
+                email: user.email || email,
+                phone,
+                address: `${roomNumber}, ${hostelBlock}`,
+                profileImage: ''
+            });
             Alert.alert('Success', 'Registration successful!');
             navigation.navigate('Main');
-        } catch (error) {
-            console.error('Registration error:', error);
-            // Provide more specific error messages for common auth errors
-            if (error.code === 'auth/email-already-in-use') {
-                Alert.alert('Error', 'That email address is already in use!');
-            } else if (error.code === 'auth/invalid-email') {
-                Alert.alert('Error', 'That email address is invalid!');
-            } else {
-                 Alert.alert('Error', 'An error occurred during registration. See console for details.');
-            }
+        } catch (err) {
+            Alert.alert('Registration failed', err.message || 'Please try again');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -71,8 +70,8 @@ const RegisterScreen = () => {
                 <TextInput style={styles.input} placeholder="Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
                 <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                    <Text style={styles.buttonText}>REGISTER</Text>
+                <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isSubmitting}>
+                    {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>REGISTER</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                     <Text style={styles.link}>Already have an account? Sign in</Text>
@@ -129,6 +128,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 2,
+        alignItems: 'center'
     },
     buttonText: {
         color: '#fff',

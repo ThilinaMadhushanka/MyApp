@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth, db } from '../firebase';
+import { useUserProfile } from '../UserProfileContext';
+import { auth, db } from './firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { useUserProfile } from '../UserProfileContext';
 
 const LoginScreen = () => {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { setProfile } = useUserProfile();
 
     const handleLogin = async () => {
@@ -19,20 +20,29 @@ const LoginScreen = () => {
             return;
         }
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            const docRef = doc(db, 'users', user.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                setProfile(docSnap.data());
+            setIsLoading(true);
+            const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+            const user = credential.user;
+            const userDocRef = doc(db, 'Users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                setProfile({
+                    name: data.firstName || data.name || email,
+                    email: data.email || email,
+                    phone: data.phone || '',
+                    address: data.address || `${data.roomNumber || ''} ${data.hostelBlock || ''}`.trim(),
+                    profileImage: data.photo || ''
+                });
             } else {
-                // Fallback to a default profile if no data is found
-                setProfile({ name: user.email, email: user.email, phone: '', address: '' });
+                setProfile({ name: email, email, phone: '', address: '' });
             }
             Alert.alert('Success', 'Login successful!');
             navigation.navigate('Main');
-        } catch (error) {
-            Alert.alert('Error', error.message);
+        } catch (err) {
+            Alert.alert('Login failed', err.message || 'Please try again');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -46,14 +56,14 @@ const LoginScreen = () => {
                 <Text style={styles.title}>Welcome Back!</Text>
                 <Text style={styles.subtitle}>Please fill in your email password to login to your account.</Text>
                 <Text style={styles.label}>Email</Text>
-                <TextInput style={styles.input} placeholder="abcd@gmail.com" value={email} onChangeText={setEmail} keyboardType="email-address" />
+                <TextInput style={styles.input} placeholder="abcd@gmail.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
                 <Text style={styles.label}>Password</Text>
                 <TextInput style={styles.input} placeholder="**********" value={password} onChangeText={setPassword} secureTextEntry />
                 <TouchableOpacity onPress={() => {}}>
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>LOGIN</Text>
+                <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
+                    {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>LOGIN</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('Register')}>
                     <Text style={styles.link}>Don't have an account? Sign up</Text>
@@ -131,6 +141,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 2,
+        alignItems: 'center'
     },
     buttonText: {
         color: '#fff',

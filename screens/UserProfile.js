@@ -5,9 +5,9 @@ import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, TextInput, I
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, db } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const UserProfile = () => {
     const navigation = useNavigation();
@@ -18,23 +18,37 @@ const UserProfile = () => {
     const [profileImage, setProfileImage] = useState(null);
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            const user = auth.currentUser;
+        setEditProfile(profile);
+        if (profile.profileImage) {
+            setProfileImage(profile.profileImage);
+        }
+    }, []);
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const docRef = doc(db, 'users', user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    setProfile(userData);
-                    setEditProfile(userData);
-                    if (userData.profileImage) {
-                        setProfileImage(userData.profileImage);
+                try {
+                    const ref = doc(db, 'Users', user.uid);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        setProfile(prev => ({
+                            ...prev,
+                            name: data.firstName || data.name || prev.name || user.email,
+                            email: data.email || user.email,
+                            phone: data.phone || prev.phone || '',
+                            address: data.address || prev.address || `${data.roomNumber || ''} ${data.hostelBlock || ''}`.trim(),
+                            profileImage: data.photo || prev.profileImage || ''
+                        }));
+                        if (data.photo) setProfileImage(data.photo);
                     }
+                } catch (e) {
+                    // fail silently to avoid UX disruption
                 }
             }
-        };
-        fetchProfile();
-    }, []);
+        });
+        return unsub;
+    }, [setProfile]);
 
 
     const pickImage = async () => {
@@ -53,19 +67,7 @@ const UserProfile = () => {
     };
 
     const uploadImage = async (uri) => {
-        const user = auth.currentUser;
-        if (user) {
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            const storage = getStorage();
-            const storageRef = ref(storage, `profile-images/${user.uid}`);
-            uploadBytes(storageRef, blob).then((snapshot) => {
-                getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-                    await setDoc(doc(db, 'users', user.uid), { profileImage: downloadURL }, { merge: true });
-                    setProfile(prevProfile => ({ ...prevProfile, profileImage: downloadURL }));
-                });
-            });
-        }
+        setProfile(prevProfile => ({ ...prevProfile, profileImage: uri }));
     };
 
 
@@ -75,19 +77,21 @@ const UserProfile = () => {
     };
 
     const handleSave = async () => {
-        const user = auth.currentUser;
-        if (user) {
-            try {
-                await setDoc(doc(db, 'users', user.uid), editProfile, { merge: true });
-                setProfile(editProfile);
-                setEditing(false);
-                Alert.alert('Success', 'Profile updated successfully!');
-                if (navigation.canGoBack() && navigation.getState()?.routes?.some(r => r.params?.fromCheckout)) {
-                    navigation.navigate('Checkout', { address: `${editProfile.name},\n${editProfile.address}\n${editProfile.phone}` });
-                }
-            } catch (error) {
-                Alert.alert('Error', error.message);
-            }
+        setProfile(editProfile);
+        setEditing(false);
+        Alert.alert('Success', 'Profile updated successfully!');
+        if (navigation.canGoBack() && navigation.getState()?.routes?.some(r => r.params?.fromCheckout)) {
+            navigation.navigate('Checkout', { address: `${editProfile.name},\n${editProfile.address}\n${editProfile.phone}` });
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            Alert.alert('Logged out', 'You have been logged out.');
+            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+        } catch (e) {
+            Alert.alert('Logout failed', e.message || 'Please try again');
         }
     };
 
@@ -167,6 +171,9 @@ const UserProfile = () => {
                 </View>
                 <TouchableOpacity style={styles.helpBtn} onPress={() => navigation.navigate('Settings')}>
                     <Text style={styles.helpText}>Help and Support</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.helpBtn, { marginTop: 10 }]} onPress={handleLogout}>
+                    <Text style={[styles.helpText, { color: 'red' }]}>Logout</Text>
                 </TouchableOpacity>
             </ScrollView>
         </ImageBackground>
