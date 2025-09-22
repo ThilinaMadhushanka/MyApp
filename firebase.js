@@ -36,6 +36,9 @@ try {
 
   // Initialize Firestore
   db = getFirestore(app);
+  console.log('Firestore initialized successfully:', db);
+  console.log('Firestore app:', db.app);
+  console.log('Firestore type:', typeof db);
 
   // Only initialize analytics in browser environment
   if (typeof window !== 'undefined') {
@@ -43,6 +46,19 @@ try {
   }
 } catch (error) {
   console.error('Firebase initialization error:', error);
+  // Ensure db is still defined even if there's an error
+  if (!db && app) {
+    try {
+      db = getFirestore(app);
+    } catch (dbError) {
+      console.error('Failed to initialize Firestore:', dbError);
+    }
+  }
+}
+
+// Ensure all exports are defined
+if (!db) {
+  console.error('Firestore database is not initialized!');
 }
 
 export { auth, db, analytics };

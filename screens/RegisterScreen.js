@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 
 const RegisterScreen = () => {
     const navigation = useNavigation();
@@ -17,14 +17,70 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    // Test Firebase connection
+    const testFirebaseConnection = async () => {
+        console.log('Testing Firebase connection...');
+        console.log('Auth instance:', auth);
+        console.log('DB instance:', db);
+        console.log('DB type:', typeof db);
+        console.log('DB constructor:', db?.constructor?.name);
+        
+        if (!db) {
+            console.error('Database is not initialized!');
+            return false;
+        }
+        
+        // Check if db has the expected Firestore methods
+        if (typeof db.collection !== 'function' && typeof db.doc !== 'function') {
+            console.error('Database does not have expected Firestore methods');
+            console.log('Available methods:', Object.getOwnPropertyNames(db));
+            return false;
+        }
+        
+        try {
+            // Test Firestore connection by trying to create a collection reference
+            const testCollection = collection(db, 'test');
+            console.log('Test collection reference created successfully:', testCollection);
+            console.log('Collection path:', testCollection.path);
+            console.log('Collection type:', testCollection.type);
+            return true;
+        } catch (error) {
+            console.error('Firebase connection test failed:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            return false;
+        }
+    };
+
     const handleRegister = async () => {
         if (!studentId || !name || !roomNumber || !hostelBlock || !phone || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
+
+        // Test Firebase connection first
+        const isFirebaseReady = await testFirebaseConnection();
+        if (!isFirebaseReady) {
+            Alert.alert('Error', 'Database service is not available. Please check your internet connection and try again.');
+            return;
+        }
+
+        // Check if Firebase services are properly initialized
+        if (!auth) {
+            Alert.alert('Error', 'Authentication service is not available. Please try again.');
+            return;
+        }
+
         try {
+            console.log('Starting user registration...');
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            console.log('User created successfully:', user.uid);
+            
+            console.log('Saving user data to Firestore...');
             await setDoc(doc(db, 'users', user.uid), {
                 studentId,
                 name,
@@ -33,9 +89,12 @@ const RegisterScreen = () => {
                 phone,
                 email
             });
+            console.log('User data saved successfully');
+            
             Alert.alert('Success', 'Registration successful!');
             navigation.navigate('Main');
         } catch (error) {
+            console.error('Registration error:', error);
             Alert.alert('Error', error.message);
         }
     };
