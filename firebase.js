@@ -1,64 +1,35 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { initializeAuth, browserLocalPersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { initializeFirestore, getFirestore } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+// Defensive side-effect import to ensure Firestore registers with Firebase
+import "firebase/firestore";
 
 // Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCTj2PpBLMaGETQ5SBL0wkdfMmVhVq9ArI",
-  authDomain: "myproject-20ed0.firebaseapp.com",
-  projectId: "myproject-20ed0",
-  storageBucket: "myproject-20ed0.firebasestorage.app",
-  messagingSenderId: "771237357556",
-  appId: "1:771237357556:web:b1cae6322b8d683d43bba1",
-  measurementId: "G-RST8FQ94H7"
+  apiKey: "AIzaSyB4mw-MIKY5dr-YzYySv0udhotGsjfEmBM",
+  authDomain: "myproject-91c75.firebaseapp.com",
+  projectId: "myproject-91c75",
+  storageBucket: "myproject-91c75.firebasestorage.app",
+  messagingSenderId: "1006423282925",
+  appId: "1:1006423282925:web:a5b116c455ddfd2605a8e4",
+  measurementId: "G-HHY7MYQR7Y"
 };
-
 // Initialize Firebase
-let app, auth, db, analytics;
+const app = initializeApp(firebaseConfig);
 
-try {
-  app = initializeApp(firebaseConfig);
+// Use React Native persistence so auth survives app restarts (web ignores this)
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
-  // Conditionally initialize Auth based on the platform
-  if (Platform.OS === 'web') {
-    auth = initializeAuth(app, {
-      persistence: browserLocalPersistence
-    });
-  } else {
-    const { getReactNativePersistence } = require("firebase/auth");
-    auth = initializeAuth(app, {
-      persistence: getReactNativePersistence(AsyncStorage)
-    });
-  }
+// Explicitly init Firestore for React Native and enable long-polling
+initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  useFetchStreams: false,
+});
+const db = getFirestore(app);
 
-  // Initialize Firestore
-  db = getFirestore(app);
-  console.log('Firestore initialized successfully:', db);
-  console.log('Firestore app:', db.app);
-  console.log('Firestore type:', typeof db);
-
-  // Only initialize analytics in browser environment
-  if (typeof window !== 'undefined') {
-    analytics = getAnalytics(app);
-  }
-} catch (error) {
-  console.error('Firebase initialization error:', error);
-  // Ensure db is still defined even if there's an error
-  if (!db && app) {
-    try {
-      db = getFirestore(app);
-    } catch (dbError) {
-      console.error('Failed to initialize Firestore:', dbError);
-    }
-  }
-}
-
-// Ensure all exports are defined
-if (!db) {
-  console.error('Firestore database is not initialized!');
-}
-
-export { auth, db, analytics };
+export { auth, db };
