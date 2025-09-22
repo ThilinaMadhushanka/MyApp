@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth, db } from '../firebase';
+import { auth, db } from '../firebase'; // Assuming firebase.js is correctly set up for modular SDK
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore'; // Removed 'collection' as it's not directly used in the simplified version
 
 const RegisterScreen = () => {
     const navigation = useNavigation();
@@ -17,70 +17,22 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // Test Firebase connection
-    const testFirebaseConnection = async () => {
-        console.log('Testing Firebase connection...');
-        console.log('Auth instance:', auth);
-        console.log('DB instance:', db);
-        console.log('DB type:', typeof db);
-        console.log('DB constructor:', db?.constructor?.name);
-        
-        if (!db) {
-            console.error('Database is not initialized!');
-            return false;
-        }
-        
-        // Check if db has the expected Firestore methods
-        if (typeof db.collection !== 'function' && typeof db.doc !== 'function') {
-            console.error('Database does not have expected Firestore methods');
-            console.log('Available methods:', Object.getOwnPropertyNames(db));
-            return false;
-        }
-        
-        try {
-            // Test Firestore connection by trying to create a collection reference
-            const testCollection = collection(db, 'test');
-            console.log('Test collection reference created successfully:', testCollection);
-            console.log('Collection path:', testCollection.path);
-            console.log('Collection type:', testCollection.type);
-            return true;
-        } catch (error) {
-            console.error('Firebase connection test failed:', error);
-            console.error('Error details:', {
-                message: error.message,
-                code: error.code,
-                stack: error.stack
-            });
-            return false;
-        }
-    };
-
     const handleRegister = async () => {
         if (!studentId || !name || !roomNumber || !hostelBlock || !phone || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
 
-        // Test Firebase connection first
-        const isFirebaseReady = await testFirebaseConnection();
-        if (!isFirebaseReady) {
-            Alert.alert('Error', 'Database service is not available. Please check your internet connection and try again.');
-            return;
-        }
-
-        // Check if Firebase services are properly initialized
-        if (!auth) {
-            Alert.alert('Error', 'Authentication service is not available. Please try again.');
+        if (!auth || !db) {
+            Alert.alert('Error', 'Firebase service is not available. Please check your setup.');
             return;
         }
 
         try {
-            console.log('Starting user registration...');
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            console.log('User created successfully:', user.uid);
-            
-            console.log('Saving user data to Firestore...');
+
+            // The collection is 'users', the document ID is the user's UID
             await setDoc(doc(db, 'users', user.uid), {
                 studentId,
                 name,
@@ -89,13 +41,19 @@ const RegisterScreen = () => {
                 phone,
                 email
             });
-            console.log('User data saved successfully');
-            
+
             Alert.alert('Success', 'Registration successful!');
             navigation.navigate('Main');
         } catch (error) {
             console.error('Registration error:', error);
-            Alert.alert('Error', error.message);
+            // Provide more specific error messages for common auth errors
+            if (error.code === 'auth/email-already-in-use') {
+                Alert.alert('Error', 'That email address is already in use!');
+            } else if (error.code === 'auth/invalid-email') {
+                Alert.alert('Error', 'That email address is invalid!');
+            } else {
+                 Alert.alert('Error', 'An error occurred during registration. See console for details.');
+            }
         }
     };
 
@@ -111,7 +69,7 @@ const RegisterScreen = () => {
                 <TextInput style={styles.input} placeholder="Room Number" value={roomNumber} onChangeText={setRoomNumber} />
                 <TextInput style={styles.input} placeholder="Hostel Block" value={hostelBlock} onChangeText={setHostelBlock} />
                 <TextInput style={styles.input} placeholder="Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-                <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+                <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
                 <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>
                     <Text style={styles.buttonText}>REGISTER</Text>
@@ -124,6 +82,7 @@ const RegisterScreen = () => {
     );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
     background: {
         flex: 1,
