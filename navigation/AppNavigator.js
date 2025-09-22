@@ -15,7 +15,6 @@ import ProductDetail from '../screens/ProductDetail';
 import CartScreen from '../screens/CartScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import OrderSuccess from '../screens/OrderSuccess';
-import cart from '../screens/CartScreen';
 import UserProfile from '../screens/UserProfile';
 import Settings from '../screens/Settings';
 import Notification from '../screens/NotificationSettings';
