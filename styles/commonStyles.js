@@ -16,10 +16,7 @@ export const commonStyles = StyleSheet.create({
     borderRadius: 24,
     marginTop: 8,
     marginBottom: 10,
-    shadowColor: '#007bff',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    boxShadow: '0 2px 4px rgba(0, 123, 255, 0.15)',
     elevation: 2,
   },
   buttonText: {

@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { initializeAuth, browserLocalPersistence } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,15 +21,22 @@ let app, auth, db, analytics;
 
 try {
   app = initializeApp(firebaseConfig);
-  
-  // Initialize Auth with AsyncStorage persistence for React Native
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
-  });
-  
+
+  // Conditionally initialize Auth based on the platform
+  if (Platform.OS === 'web') {
+    auth = initializeAuth(app, {
+      persistence: browserLocalPersistence
+    });
+  } else {
+    const { getReactNativePersistence } = require("firebase/auth");
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage)
+    });
+  }
+
   // Initialize Firestore
   db = getFirestore(app);
-  
+
   // Only initialize analytics in browser environment
   if (typeof window !== 'undefined') {
     analytics = getAnalytics(app);
