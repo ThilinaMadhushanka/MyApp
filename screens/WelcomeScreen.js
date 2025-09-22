@@ -7,24 +7,34 @@ import { commonStyles } from '../styles/commonStyles';
 const WelcomeScreen = () => {
     const navigation = useNavigation();
 
+    console.log('WelcomeScreen rendering...');
+
     return (
-        <ImageBackground
-            source={require('../assets/images/welcome.png')}
-            style={styles.background}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1 }} />
-            <View style={styles.bottomPanel}>
-                <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('FeatureIntro1')}>
-                    <Text style={commonStyles.buttonText}>See Features</Text>
-                </TouchableOpacity>
-            </View>
-        </ImageBackground>
+        <View style={styles.container}>
+            <ImageBackground
+                source={require('../assets/images/welcome.png')}
+                style={styles.background}
+                resizeMode="cover"
+                onError={(error) => console.log('Image load error:', error)}
+                onLoad={() => console.log('Image loaded successfully')}
+            >
+                <View style={{ flex: 1 }} />
+                <View style={styles.bottomPanel}>
+                    <TouchableOpacity style={commonStyles.button} onPress={() => navigation.navigate('FeatureIntro1')}>
+                        <Text style={commonStyles.buttonText}>See Features</Text>
+                    </TouchableOpacity>
+                </View>
+            </ImageBackground>
+        </View>
     );
 };
 
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f0f0f0', // Fallback background color
+    },
     background: {
         flex: 1,
         width: '100%',

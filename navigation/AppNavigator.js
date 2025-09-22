@@ -25,7 +25,7 @@ const Tab = createBottomTabNavigator();
 const MainApp = () => (
     <Tab.Navigator>
         <Tab.Screen name="Dashboard" component={DashboardMain} />
-        <Tab.Screen name="Cart" component={cart} />
+        <Tab.Screen name="Cart" component={CartScreen} />
         <Tab.Screen name="Profile" component={UserProfile} />
         <Tab.Screen name="Notification" component={Notification} />
         <Tab.Screen name="Settings" component={Settings} />
