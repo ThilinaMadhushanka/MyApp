@@ -1,27 +1,37 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, ImageBackground, ScrollView, Modal } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,useRoute } from '@react-navigation/native';
+import { useUserProfile } from '../UserProfileContext';
 
 
-const CheckoutScreen = ({ route, navigation }) => {
+const CheckoutScreen = ({ navigation }) => {
+    const route = useRoute();
     const [deliveryType, setDeliveryType] = useState('standard');
     const [showTime, setShowTime] = useState(false);
     const [selectedTime, setSelectedTime] = useState('13:00');
+    
     // Get address from params or fallback
-    const initialAddress = route?.params?.address || "Saman Kumara,\nBoy's Hostel,\nAriviyal nagar,Kilinochchi.\n0711234567";
+    const { profile, setProfile } = useUserProfile();
+    const initialAddress = `${profile?.name},\n${profile?.address},\n${profile?.phone}` || "Saman Kumara,\nBoy's Hostel,\nAriviyal nagar,Kilinochchi.\n0711234567";
     const [address, setAddress] = useState(initialAddress);
     const [card, setCard] = useState({ number: '**** **** **** 3282', holder: 'Utibe Inyang', expiry: '12/23' });
     const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'cash'
-    const [subtotal, setSubtotal] = useState(100);
+    const [subtotal, setSubtotal] = useState(0);
     const [deliveryFee, setDeliveryFee] = useState(10);
     const [showCardModal, setShowCardModal] = useState(false);
     const [newCard, setNewCard] = useState({ number: '', holder: '', expiry: '' });
     const [showCalendar, setShowCalendar] = useState(false);
     const [selectedDate, setSelectedDate] = useState('December 2, 2021');
-
+    
+    useEffect(()=>{
+        const bottle=route.params.product.bottleSize.replace("L", '')
+        const price=route.params.product.price.replace("Rs.", '')
+        const quantity=route.params.product.quantity
+        setSubtotal(bottle*quantity*price)
+    },[])
     // Update address if coming back from profile
     React.useEffect(() => {
         if (route?.params?.address) {
@@ -29,6 +39,7 @@ const CheckoutScreen = ({ route, navigation }) => {
         }
     }, [route?.params?.address]);
 
+  
     const handleConfirmOrder = () => {
         if (paymentMethod === 'cash') {
             navigation.navigate('OrderSuccess');

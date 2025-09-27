@@ -88,7 +88,15 @@ const ProductDetail = () => {
                         </View>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.buyBtn} onPress={() => navigation.navigate('Checkout')}>
+                <TouchableOpacity style={styles.buyBtn} onPress={() => navigation.navigate('Checkout',
+                    {
+                        product: {
+                            price:product.price,
+                            bottleSize: bottleSize,
+                            quantity: quantity,
+                        },
+                    }
+                )}>
                     <Text style={styles.buyText}>BUY</Text>
                 </TouchableOpacity>
             </View>
