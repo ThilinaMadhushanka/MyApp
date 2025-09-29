@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUserProfile } from '../UserProfileContext';
+import { useTheme } from '../ThemeContext';
 import {
   View,
   Text,
@@ -14,37 +15,159 @@ import { Ionicons } from '@expo/vector-icons';
 
 const DashboardMain = ({ navigation, route }) => {
   const { profile } = useUserProfile();
+  const { colors } = useTheme();
   const userName = profile?.name || route?.params?.name || 'Mr Product';
   const [activeWaterType, setActiveWaterType] = useState('All');
   
   const [favorites, setFavorites] = useState([]);
-  const products = [
+  
+  // All products with their categories
+  const allProducts = [
+    // Filtering Mass Water - Multiple sizes
     {
+      id: 'filtering-mass-5l',
       name: 'Filtering Mass Water',
-      price: 'Rs. 100',
-      image: require('../assets/images/19l.png'),
-    },
-    {
-      name: 'Filtering Fac. Water',
-      price: 'Rs. 100',
-      image: require('../assets/images/19l.png'),
-    },
-    {
-      name: 'Market Water',
-      price: 'Rs. 150',
+      size: '5L',
+      price: 'Rs. 50',
       image: require('../assets/images/5l.png'),
+      category: 'Filtering mass',
     },
     {
+      id: 'filtering-mass-10l',
+      name: 'Filtering Mass Water',
+      size: '10L',
+      price: 'Rs. 80',
+      image: require('../assets/images/5l.png'),
+      category: 'Filtering mass',
+    },
+    {
+      id: 'filtering-mass-15l',
+      name: 'Filtering Mass Water',
+      size: '15L',
+      price: 'Rs. 120',
+      image: require('../assets/images/19l.png'),
+      category: 'Filtering mass',
+    },
+    {
+      id: 'filtering-mass-19l',
+      name: 'Filtering Mass Water',
+      size: '19L',
+      price: 'Rs. 150',
+      image: require('../assets/images/19l.png'),
+      category: 'Filtering mass',
+    },
+    
+    // Filtering Faculty Water - Multiple sizes
+    {
+      id: 'filtering-fac-5l',
+      name: 'Filtering Fac. Water',
+      size: '5L',
+      price: 'Rs. 50',
+      image: require('../assets/images/5l.png'),
+      category: 'Filtering faculty',
+    },
+    {
+      id: 'filtering-fac-10l',
+      name: 'Filtering Fac. Water',
+      size: '10L',
+      price: 'Rs. 80',
+      image: require('../assets/images/5l.png'),
+      category: 'Filtering faculty',
+    },
+    {
+      id: 'filtering-fac-15l',
+      name: 'Filtering Fac. Water',
+      size: '15L',
+      price: 'Rs. 120',
+      image: require('../assets/images/19l.png'),
+      category: 'Filtering faculty',
+    },
+    {
+      id: 'filtering-fac-19l',
+      name: 'Filtering Fac. Water',
+      size: '19L',
+      price: 'Rs. 150',
+      image: require('../assets/images/19l.png'),
+      category: 'Filtering faculty',
+    },
+    
+    // Market Water - Multiple sizes
+    {
+      id: 'market-500ml',
+      name: 'Market Water',
+      size: '500ml',
+      price: 'Rs. 70',
+      image: require('../assets/images/5l.png'),
+      category: 'Market bottle',
+    },
+    {
+      id: 'market-1l',
+      name: 'Market Water',
+      size: '1L',
+      price: 'Rs. 100',
+      image: require('../assets/images/5l.png'),
+      category: 'Market bottle',
+    },
+    {
+      id: 'market-5l',
+      name: 'Market Water',
+      size: '5L',
+      price: 'Rs. 450',
+      image: require('../assets/images/5l.png'),
+      category: 'Market bottle',
+    },
+    
+    // Tap Water - Multiple sizes
+    {
+      id: 'tap-5l',
       name: 'Tap Water',
+      size: '5L',
       price: 'Rs. 40',
       image: require('../assets/images/5l.png'),
+      category: 'Market bottle',
+    },
+    {
+      id: 'tap-10l',
+      name: 'Tap Water',
+      size: '10L',
+      price: 'Rs. 60',
+      image: require('../assets/images/5l.png'),
+      category: 'Market bottle',
+    },
+    {
+      id: 'tap-15l',
+      name: 'Tap Water',
+      size: '15L',
+      price: 'Rs. 80',
+      image: require('../assets/images/19l.png'),
+      category: 'Market bottle',
+    },
+    {
+      id: 'tap-19l',
+      name: 'Tap Water',
+      size: '19L',
+      price: 'Rs. 100',
+      image: require('../assets/images/19l.png'),
+      category: 'Market bottle',
     },
   ];
+
+  // Filter products based on active water type
+  const getFilteredProducts = () => {
+    if (activeWaterType === 'All') {
+      return allProducts;
+    }
+    return allProducts.filter(product => 
+      product.category.toLowerCase() === activeWaterType.toLowerCase()
+    );
+  };
+
+  const products = getFilteredProducts();
 
   const waterTypes = ['All', 'Filtering mass', 'Filtering faculty', 'Market bottle'];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ImageBackground
         source={require('../assets/images/welcome.png')}
         style={styles.headerBg}
@@ -53,14 +176,14 @@ const DashboardMain = ({ navigation, route }) => {
       >
         
         <View style={styles.headerContent}>
-          <Text style={styles.headerWelcome}>Welcome Back!</Text>
-          <Text style={styles.headerUser}>{userName}!</Text>
+          <Text style={[styles.headerWelcome, { color: colors.text }]}>Welcome Back!</Text>
+          <Text style={[styles.headerUser, { color: colors.text }]}>{userName}!</Text>
           
           <View style={styles.searchContainer}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { backgroundColor: colors.surface, color: colors.text }]}
               placeholder="Search Something..."
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
             />
             <TouchableOpacity style={styles.searchIconButton}>
               <Ionicons name="search" size={20} color="white" />
@@ -92,7 +215,10 @@ const DashboardMain = ({ navigation, route }) => {
 
         {/* Water Type Section */}
         <View style={styles.waterTypeSection}>
-          <Text style={styles.waterTypeTitle}>Water type</Text>
+          <View style={styles.waterTypeHeader}>
+            <Text style={styles.waterTypeTitle}>Water type</Text>
+            <Text style={styles.productCount}>{products.length} products</Text>
+          </View>
           
           <ScrollView 
             horizontal 
@@ -128,23 +254,32 @@ const DashboardMain = ({ navigation, route }) => {
 
         {/* Product Grid */}
         <View style={styles.productSection}>
-          <View style={styles.productGrid}>
-            {products.map((product, index) => {
-              const isFav = favorites.includes(index);
+          {products.length === 0 ? (
+            <View style={styles.noProductsContainer}>
+              <Ionicons name="water-outline" size={60} color="#ccc" />
+              <Text style={styles.noProductsText}>No products found</Text>
+              <Text style={styles.noProductsSubtext}>Try selecting a different water type</Text>
+            </View>
+          ) : (
+            <View style={styles.productGrid}>
+              {products.map((product, index) => {
+              // Find the original index in allProducts array using unique ID
+              const originalIndex = allProducts.findIndex(p => p.id === product.id);
+              const isFav = favorites.includes(originalIndex);
               return (
-                <View key={index} style={styles.productCard}>
+                <View key={product.id} style={styles.productCard}>
                   <TouchableOpacity
                     style={styles.favoriteIcon}
                     onPress={() => {
                       setFavorites(favs => {
-                        const updated = favs.includes(index)
-                          ? favs.filter(i => i !== index)
-                          : [...favs, index];
+                        const updated = favs.includes(originalIndex)
+                          ? favs.filter(i => i !== originalIndex)
+                          : [...favs, originalIndex];
                         // After updating favorites, navigate to Cart with favorited products
-                        const cartItems = updated.map(i => products[i]);
+                        const cartItems = updated.map(i => allProducts[i]);
                         setTimeout(() => {
                           // Only navigate if adding (not removing)
-                          if (!favs.includes(index)) {
+                          if (!favs.includes(originalIndex)) {
                             navigation.navigate('Cart', { cartItems });
                           }
                         }, 0);
@@ -160,7 +295,7 @@ const DashboardMain = ({ navigation, route }) => {
                     onPress={() => navigation.navigate('ProductDetail', {
                       product: {
                         ...product,
-                        bottleSize: '19L',
+                        bottleSize: product.size,
                         quantity: 1,
                       }
                     })}
@@ -170,13 +305,15 @@ const DashboardMain = ({ navigation, route }) => {
                     </View>
                     <View style={styles.productInfo}>
                       <Text style={styles.productName}>{product.name}</Text>
+                      <Text style={styles.productSize}>{product.size}</Text>
                       <Text style={styles.productPrice}>{product.price}</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
               );
-            })}
-          </View>
+              })}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -296,12 +433,22 @@ const styles = StyleSheet.create({
   waterTypeSection: {
     marginBottom: 25,
   },
+  waterTypeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 15,
+  },
   waterTypeTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 20,
-    marginBottom: 15,
     color: '#333',
+  },
+  productCount: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
   },
   waterTypeScroll: {
     paddingHorizontal: 15,
@@ -395,12 +542,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#333',
+    marginBottom: 3,
+  },
+  productSize: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 5,
+    fontWeight: '500',
   },
   productPrice: {
     fontSize: 14,
     color: '#1E90FF',
     fontWeight: '600',
+  },
+  noProductsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  noProductsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  noProductsSubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
 });
 

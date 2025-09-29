@@ -1,21 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../UserProfileContext';
+import { useTheme } from '../ThemeContext';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, TextInput, Image, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const UserProfile = () => {
     const navigation = useNavigation();
     const { profile, setProfile } = useUserProfile();
+    const { colors } = useTheme();
     const [editing, setEditing] = useState(false);
     const [editProfile, setEditProfile] = useState(profile);
     const [enrollCount] = useState(7);
     const [profileImage, setProfileImage] = useState(null);
+    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [showVerification, setShowVerification] = useState(false);
 
     useEffect(() => {
         setEditProfile(profile);
@@ -41,6 +45,7 @@ const UserProfile = () => {
                             profileImage: data.photo || prev.profileImage || ''
                         }));
                         if (data.photo) setProfileImage(data.photo);
+                        setIsPhoneVerified(data.phoneVerified || false);
                     }
                 } catch (e) {
                     // fail silently to avoid UX disruption
@@ -68,6 +73,49 @@ const UserProfile = () => {
 
     const uploadImage = async (uri) => {
         setProfile(prevProfile => ({ ...prevProfile, profileImage: uri }));
+        // Update in Firebase
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                await updateDoc(doc(db, 'Users', user.uid), {
+                    photo: uri
+                });
+            }
+        } catch (error) {
+            console.log('Error updating profile image:', error);
+        }
+    };
+
+    // Phone verification functions
+    const sendVerificationCode = () => {
+        if (!editProfile.phone) {
+            Alert.alert('Error', 'Please enter a phone number first');
+            return;
+        }
+        Alert.alert('Verification Code Sent', `A verification code has been sent to ${editProfile.phone}`);
+        setShowVerification(true);
+    };
+
+    const verifyPhoneNumber = async () => {
+        if (verificationCode === '1234') { // Simple demo code
+            setIsPhoneVerified(true);
+            setShowVerification(false);
+            Alert.alert('Success', 'Phone number verified successfully!');
+            
+            // Update in Firebase
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await updateDoc(doc(db, 'Users', user.uid), {
+                        phoneVerified: true
+                    });
+                }
+            } catch (error) {
+                console.log('Error updating phone verification:', error);
+            }
+        } else {
+            Alert.alert('Error', 'Invalid verification code. Try 1234 for demo.');
+        }
     };
 
 
@@ -96,10 +144,10 @@ const UserProfile = () => {
     };
 
     return (
-        <ImageBackground style={styles.bg} blurRadius={2}>
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <Text style={styles.greeting}>Hi <Text style={{ color: '#1E90FF' }}>{profile.name}</Text></Text>
-                <Text style={styles.greetingSub}>Good morning!</Text>
+        <ImageBackground style={[styles.bg, { backgroundColor: colors.background }]} blurRadius={2}>
+            <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+                <Text style={[styles.greeting, { color: colors.text }]}>Hi <Text style={{ color: colors.primary }}>{profile.name}</Text></Text>
+                <Text style={[styles.greetingSub, { color: colors.textSecondary }]}>Good morning!</Text>
                 <View style={styles.avatarWrap}>
                     <TouchableOpacity onPress={pickImage}>
                         <Image source={{ uri: profileImage || 'https://via.placeholder.com/100' }} style={styles.avatar} />
@@ -133,13 +181,54 @@ const UserProfile = () => {
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
-                        <TextInput
-                            style={styles.input}
-                            value={editProfile.phone}
-                            onChangeText={t => setEditProfile({ ...editProfile, phone: t })}
-                            placeholder="Phone"
-                            keyboardType="phone-pad"
-                        />
+                        <View style={styles.phoneContainer}>
+                            <TextInput
+                                style={[styles.input, styles.phoneInput]}
+                                value={editProfile.phone}
+                                onChangeText={t => setEditProfile({ ...editProfile, phone: t })}
+                                placeholder="Phone"
+                                keyboardType="phone-pad"
+                            />
+                            <TouchableOpacity 
+                                style={[styles.verifyButton, isPhoneVerified && styles.verifiedButton]} 
+                                onPress={sendVerificationCode}
+                                disabled={isPhoneVerified}
+                            >
+                                <Ionicons 
+                                    name={isPhoneVerified ? "checkmark-circle" : "send"} 
+                                    size={20} 
+                                    color={isPhoneVerified ? "#28a745" : "#fff"} 
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Phone Verification Status */}
+                        <View style={styles.verificationStatus}>
+                            <Ionicons 
+                                name={isPhoneVerified ? "checkmark-circle" : "warning"} 
+                                size={16} 
+                                color={isPhoneVerified ? "#28a745" : "#ff6b6b"} 
+                            />
+                            <Text style={[styles.verificationText, { color: isPhoneVerified ? "#28a745" : "#ff6b6b" }]}>
+                                {isPhoneVerified ? "Phone verified" : "Phone not verified"}
+                            </Text>
+                        </View>
+
+                        {/* Verification Code Input */}
+                        {showVerification && (
+                            <View style={styles.verificationContainer}>
+                                <TextInput 
+                                    style={styles.input} 
+                                    placeholder="Enter verification code" 
+                                    value={verificationCode} 
+                                    onChangeText={setVerificationCode} 
+                                    keyboardType="number-pad"
+                                />
+                                <TouchableOpacity style={styles.verifyCodeButton} onPress={verifyPhoneNumber}>
+                                    <Text style={styles.verifyCodeText}>Verify</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                         <TextInput
                             style={styles.input}
                             value={editProfile.address}
@@ -332,6 +421,52 @@ const styles = StyleSheet.create({
         color: '#1E90FF',
         fontSize: 16,
         textDecorationLine: 'underline',
+    },
+    // Phone verification styles
+    phoneContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    phoneInput: {
+        flex: 1,
+        marginRight: 10,
+    },
+    verifyButton: {
+        backgroundColor: '#1E90FF',
+        padding: 12,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    verifiedButton: {
+        backgroundColor: '#28a745',
+    },
+    verificationStatus: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    verificationText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 6,
+    },
+    verificationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    verifyCodeButton: {
+        backgroundColor: '#28a745',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginLeft: 10,
+    },
+    verifyCodeText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 });
 

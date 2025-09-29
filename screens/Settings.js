@@ -1,61 +1,84 @@
-
 import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../ThemeContext';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase';
+import { Alert } from 'react-native';
 
 const Settings = () => {
     const navigation = useNavigation();
-    const [darkMode, setDarkMode] = useState(false);
+    const { isDarkMode, toggleTheme, colors } = useTheme();
     const [privacy, setPrivacy] = useState(true);
 
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            Alert.alert('Logged out', 'You have been logged out.');
+            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+        } catch (e) {
+            Alert.alert('Logout failed', e.message || 'Please try again');
+        }
+    };
+
+
     return (
-        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>Settings</Text>
+        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+            <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
-            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Profile')}>
+            <TouchableOpacity style={[styles.settingItem, { borderColor: colors.border }]} onPress={() => navigation.navigate('Profile')}>
                 <View style={styles.settingLeft}>
-                    <Ionicons name="person-circle-outline" size={24} color="#1E90FF" />
-                    <Text style={styles.settingLabel}>Profile</Text>
+                    <Ionicons name="person-circle-outline" size={24} color={colors.primary} />
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Profile</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#bbb" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Notification')}>
+            <TouchableOpacity style={[styles.settingItem, { borderColor: colors.border }]} onPress={() => navigation.navigate('Notification')}>
                 <View style={styles.settingLeft}>
-                    <Ionicons name="notifications-outline" size={24} color="#1E90FF" />
-                    <Text style={styles.settingLabel}>Notifications</Text>
+                    <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Notifications</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#bbb" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <View style={styles.settingItem}>
+            <View style={[styles.settingItem, { borderColor: colors.border }]}>
                 <View style={styles.settingLeft}>
-                    <Ionicons name="lock-closed-outline" size={24} color="#1E90FF" />
-                    <Text style={styles.settingLabel}>Privacy</Text>
+                    <Ionicons name="lock-closed-outline" size={24} color={colors.primary} />
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Privacy</Text>
                 </View>
-                <Switch value={privacy} onValueChange={setPrivacy} />
+                <Switch 
+                    value={privacy} 
+                    onValueChange={setPrivacy}
+                    trackColor={{ false: colors.border, true: colors.primary }}
+                    thumbColor={privacy ? colors.primaryText : colors.textSecondary}
+                />
             </View>
 
-            <View style={styles.settingItem}>
+            <View style={[styles.settingItem, { borderColor: colors.border }]}>
                 <View style={styles.settingLeft}>
-                    <Ionicons name="moon-outline" size={24} color="#1E90FF" />
-                    <Text style={styles.settingLabel}>Dark Mode</Text>
+                    <Ionicons name="moon-outline" size={24} color={colors.primary} />
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Dark Mode</Text>
                 </View>
-                <Switch value={darkMode} onValueChange={setDarkMode} />
+                <Switch 
+                    value={isDarkMode} 
+                    onValueChange={toggleTheme}
+                    trackColor={{ false: colors.border, true: colors.primary }}
+                    thumbColor={isDarkMode ? colors.primaryText : colors.textSecondary}
+                />
             </View>
 
-            <TouchableOpacity style={styles.settingItem}>
+            <TouchableOpacity style={[styles.settingItem, { borderColor: colors.border }]} onPress={() => navigation.navigate('HelpSupport')}>
                 <View style={styles.settingLeft}>
-                    <Ionicons name="help-circle-outline" size={24} color="#1E90FF" />
-                    <Text style={styles.settingLabel}>Help & Support</Text>
+                    <Ionicons name="help-circle-outline" size={24} color={colors.primary} />
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Help & Support</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#bbb" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.logoutBtn}>
-                <Ionicons name="log-out-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.logoutText}>Logout</Text>
+            <TouchableOpacity style={[styles.helpBtn, { marginTop: 10 }]} onPress={handleLogout}>
+                                <Text style={[styles.helpText, { color: 'red' }]}>Logout</Text>
             </TouchableOpacity>
         </ScrollView>
     );
@@ -64,13 +87,11 @@ const Settings = () => {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: '#fff',
         padding: 24,
     },
     title: {
         fontSize: 26,
         fontWeight: 'bold',
-        color: '#1E90FF',
         marginBottom: 24,
     },
     settingItem: {
@@ -80,7 +101,6 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderColor: '#f0f0f0',
     },
     settingLeft: {
         flexDirection: 'row',
@@ -89,12 +109,10 @@ const styles = StyleSheet.create({
     settingLabel: {
         fontSize: 16,
         marginLeft: 12,
-        color: '#222',
     },
     logoutBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1E90FF',
         borderRadius: 16,
         paddingVertical: 12,
         paddingHorizontal: 32,
@@ -102,7 +120,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     logoutText: {
-        color: '#fff',
         fontWeight: 'bold',
         fontSize: 16,
     },

@@ -17,20 +17,20 @@ const CheckoutScreen = ({ navigation }) => {
     const { profile, setProfile } = useUserProfile();
     const initialAddress = `${profile?.name},\n${profile?.address},\n${profile?.phone}` || "Saman Kumara,\nBoy's Hostel,\nAriviyal nagar,Kilinochchi.\n0711234567";
     const [address, setAddress] = useState(initialAddress);
-    const [card, setCard] = useState({ number: '**** **** **** 3282', holder: 'Utibe Inyang', expiry: '12/23' });
+    const [card, setCard] = useState({ number: '**** **** **** 3282', holder: 'Utibe Inyang', expiry: '12/26' });
     const [paymentMethod, setPaymentMethod] = useState('card'); // 'card' or 'cash'
     const [subtotal, setSubtotal] = useState(0);
     const [deliveryFee, setDeliveryFee] = useState(10);
     const [showCardModal, setShowCardModal] = useState(false);
     const [newCard, setNewCard] = useState({ number: '', holder: '', expiry: '' });
     const [showCalendar, setShowCalendar] = useState(false);
-    const [selectedDate, setSelectedDate] = useState('December 2, 2021');
+    const [selectedDate, setSelectedDate] = useState('September 29, 2025');
     
     useEffect(()=>{
         const bottle=route.params.product.bottleSize.replace("L", '')
         const price=route.params.product.price.replace("Rs.", '')
         const quantity=route.params.product.quantity
-        setSubtotal(bottle*quantity*price)
+        setSubtotal(quantity*price)
     },[])
     // Update address if coming back from profile
     React.useEffect(() => {
@@ -224,7 +224,7 @@ const CheckoutScreen = ({ navigation }) => {
                                                 setNewCard({ number: '', holder: '', expiry: '', cvc: '' });
                                             }}
                                         >
-                                            <Text style={styles.addCardBtnTextFull}>Add Card 0.00 LKR</Text>
+                                            <Text style={styles.addCardBtnTextFull}>Add Card</Text>
                                         </TouchableOpacity>
                                         <View style={{ width: 10 }} />
                                         <TouchableOpacity style={styles.cardModalBtn} onPress={() => setShowCardModal(false)}>

@@ -18,6 +18,7 @@ import OrderSuccess from '../screens/OrderSuccess';
 import UserProfile from '../screens/UserProfile';
 import Settings from '../screens/Settings';
 import Notification from '../screens/NotificationSettings';
+import HelpSupport from '../screens/HelpSupport';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,6 +47,7 @@ const AppNavigator = () => (
             <Stack.Screen name="Cart" component={CartScreen} />
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
             <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
+            <Stack.Screen name="HelpSupport" component={HelpSupport} />
         </Stack.Navigator>
     </NavigationContainer>
 );

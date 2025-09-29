@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground, ActivityIndicator, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserProfile } from '../UserProfileContext';
 import { auth, db } from './firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
+import * as ImagePicker from 'expo-image-picker';
 
 const RegisterScreen = () => {
     const navigation = useNavigation();
@@ -19,10 +20,54 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+    const [showVerification, setShowVerification] = useState(false);
+
+    // Phone verification functions
+    const sendVerificationCode = () => {
+        if (!phone) {
+            Alert.alert('Error', 'Please enter a phone number first');
+            return;
+        }
+        // Simulate sending verification code
+        Alert.alert('Verification Code Sent', `A verification code has been sent to ${phone}`);
+        setShowVerification(true);
+    };
+
+    const verifyPhoneNumber = () => {
+        // Simulate verification (in real app, you'd verify with backend)
+        if (verificationCode === '1234') { // Simple demo code
+            setIsPhoneVerified(true);
+            setShowVerification(false);
+            Alert.alert('Success', 'Phone number verified successfully!');
+        } else {
+            Alert.alert('Error', 'Invalid verification code. Try 1234 for demo.');
+        }
+    };
+
+    // Image picker function
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setProfileImage(result.assets[0].uri);
+        }
+    };
 
     const handleRegister = async () => {
         if (!studentId || !name || !roomNumber || !hostelBlock || !phone || !email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+        if (!isPhoneVerified) {
+            Alert.alert('Error', 'Please verify your phone number before registering');
             return;
         }
         try {
@@ -38,14 +83,15 @@ const RegisterScreen = () => {
                 studentId,
                 roomNumber,
                 hostelBlock,
-                photo: ''
+                photo: profileImage || '',
+                phoneVerified: true
             });
             setProfile({
                 name,
                 email: user.email || email,
                 phone,
                 address: `${roomNumber}, ${hostelBlock}`,
-                profileImage: ''
+                profileImage: profileImage || ''
             });
             Alert.alert('Success', 'Registration successful!');
             navigation.navigate('Main');
@@ -63,11 +109,76 @@ const RegisterScreen = () => {
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Create Account</Text>
+                
+                {/* Profile Image Upload */}
+                <View style={styles.imageUploadContainer}>
+                    <TouchableOpacity style={styles.imageUploadButton} onPress={pickImage}>
+                        {profileImage ? (
+                            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                        ) : (
+                            <View style={styles.placeholderImage}>
+                                <Ionicons name="camera" size={30} color="#007bff" />
+                                <Text style={styles.uploadText}>Add Photo</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
+
                 <TextInput style={styles.input} placeholder="Student ID" value={studentId} onChangeText={setStudentId} />
                 <TextInput style={styles.input} placeholder="Full Name" value={name} onChangeText={setName} />
                 <TextInput style={styles.input} placeholder="Room Number" value={roomNumber} onChangeText={setRoomNumber} />
                 <TextInput style={styles.input} placeholder="Hostel Block" value={hostelBlock} onChangeText={setHostelBlock} />
-                <TextInput style={styles.input} placeholder="Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+                
+                {/* Phone Number with Verification */}
+                <View style={styles.phoneContainer}>
+                    <TextInput 
+                        style={[styles.input, styles.phoneInput]} 
+                        placeholder="Phone Number" 
+                        value={phone} 
+                        onChangeText={setPhone} 
+                        keyboardType="phone-pad" 
+                    />
+                    <TouchableOpacity 
+                        style={[styles.verifyButton, isPhoneVerified && styles.verifiedButton]} 
+                        onPress={sendVerificationCode}
+                        disabled={isPhoneVerified}
+                    >
+                        <Ionicons 
+                            name={isPhoneVerified ? "checkmark-circle" : "send"} 
+                            size={20} 
+                            color={isPhoneVerified ? "#28a745" : "#fff"} 
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Phone Verification Status */}
+                <View style={styles.verificationStatus}>
+                    <Ionicons 
+                        name={isPhoneVerified ? "checkmark-circle" : "warning"} 
+                        size={16} 
+                        color={isPhoneVerified ? "#28a745" : "#ff6b6b"} 
+                    />
+                    <Text style={[styles.verificationText, { color: isPhoneVerified ? "#28a745" : "#ff6b6b" }]}>
+                        {isPhoneVerified ? "Phone verified" : "Phone not verified"}
+                    </Text>
+                </View>
+
+                {/* Verification Code Input */}
+                {showVerification && (
+                    <View style={styles.verificationContainer}>
+                        <TextInput 
+                            style={styles.input} 
+                            placeholder="Enter verification code" 
+                            value={verificationCode} 
+                            onChangeText={setVerificationCode} 
+                            keyboardType="number-pad"
+                        />
+                        <TouchableOpacity style={styles.verifyCodeButton} onPress={verifyPhoneNumber}>
+                            <Text style={styles.verifyCodeText}>Verify</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
                 <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
                 <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isSubmitting}>
@@ -143,6 +254,80 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
         textDecorationLine: 'underline',
+    },
+    // New styles for image upload and phone verification
+    imageUploadContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    imageUploadButton: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#f0f0f0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#007bff',
+        borderStyle: 'dashed',
+    },
+    profileImage: {
+        width: 96,
+        height: 96,
+        borderRadius: 48,
+    },
+    placeholderImage: {
+        alignItems: 'center',
+    },
+    uploadText: {
+        color: '#007bff',
+        fontSize: 12,
+        marginTop: 5,
+    },
+    phoneContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    phoneInput: {
+        flex: 1,
+        marginRight: 10,
+    },
+    verifyButton: {
+        backgroundColor: '#007bff',
+        padding: 12,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    verifiedButton: {
+        backgroundColor: '#28a745',
+    },
+    verificationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    verifyCodeButton: {
+        backgroundColor: '#28a745',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        marginLeft: 10,
+    },
+    verifyCodeText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    verificationStatus: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    verificationText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 6,
     },
 });
 
